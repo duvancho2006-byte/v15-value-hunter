@@ -16,10 +16,20 @@ st.sidebar.header('⚙️ V15')
 page = st.sidebar.radio('Sección', ['🏠 Resumen', '💰 Value Scanner', '🧪 Test 15–28 agosto', '📚 Datos'])
 
 with st.spinner('Cargando datos históricos de Football-Data...'):
-    data = load_data()
+
+    data = load_data(include_test=True)
+    training_data = load_data(include_test=False)
 
 if data.empty:
+
     st.error('No se pudieron cargar datos históricos.')
+
+    st.stop()
+
+if training_data.empty:
+
+    st.error('No se pudo construir la base de entrenamiento.')
+
     st.stop()
 
 if page == '🏠 Resumen':
@@ -35,7 +45,7 @@ if page == '🏠 Resumen':
 
 elif page == '📚 Datos':
     st.subheader('📚 Datos históricos')
-    st.dataframe(data[['Date','country','division','HomeTeam','AwayTeam']].tail(100), use_container_width=True, hide_index=True)
+    st.dataframe(training_data[['Date','country','division','HomeTeam','AwayTeam']].tail(100), use_container_width=True, hide_index=True)
 
 else:
     with st.spinner('Calculando el test fuera de muestra...'):
