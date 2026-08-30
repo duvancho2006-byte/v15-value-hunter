@@ -103,11 +103,22 @@ def download_league(country, division, season):
     return df
 
 
-def load_data():
+def load_data(include_test=True):
+    """
+    Carga la base histórica de V15.
+
+    include_test=True:
+        Conserva los partidos del período de prueba ciega.
+
+    include_test=False:
+        Devuelve únicamente información disponible antes del corte.
+    """
     frames = []
+
     for _, (country, division) in LEAGUES.items():
         for season in season_codes_until_cutoff():
             df = download_league(country, division, season)
+
             if not df.empty:
                 frames.append(df)
 
@@ -118,8 +129,20 @@ def load_data():
         )
 
     data = pd.concat(frames, ignore_index=True, sort=False)
-    data = data.dropna(subset=["Date", "HomeTeam", "AwayTeam"])
-    data = data.sort_values(["Date", "country", "division"]).reset_index(drop=True)
+
+    data = data.dropna(
+        subset=["Date", "HomeTeam", "AwayTeam"]
+    )
+
+    # Orden cronológico antes de cualquier cálculo.
+    data = data.sort_values(
+        ["Date", "country", "division"]
+    ).reset_index(drop=True)
+
+    if not include_test:
+        data = data[data["Date"] <= CUTOFF].copy()
+        data = data.reset_index(drop=True)
+
     return data
 
 
