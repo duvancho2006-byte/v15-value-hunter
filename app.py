@@ -61,78 +61,86 @@ else:
         st.dataframe(pred, use_container_width=True, hide_index=True)
 
     else:
-        st.subheader('💰 Value Scanner')
-        score_cols = [c for c in ['o25_score','u25_score'] if c in pred.columns]
-        if not score_cols:
-            st.warning('Todavía no hay cuotas O/U 2.5 disponibles para el escáner.')
-            st.stop()
-
-        min_score = st.slider(
-    'Value Score mínimo',
-    50,
-    100,
-    65
-)
-
-tables = []
-
-for c in score_cols:
-    prefix = "o25" if c == "o25_score" else "u25"
-
-    pcol = f"{prefix}_prob"
-    ocol = f"{prefix}_odds"
-    gcol = f"{prefix}_gap"
-
-    required = [c, pcol, ocol, gcol]
-
-    if not all(x in pred.columns for x in required):
-        continue
-
-    d = pred[
-        (pred[c].fillna(-1) >= min_score) &
-        (pred[pcol].fillna(-1) >= MIN_MODEL_PROB) &
-        (pred[gcol].fillna(-1) >= MIN_VALUE_GAP) &
-        (pred[ocol].fillna(-1) >= MIN_ODDS) &
-        (pred[ocol].fillna(-1) <= MAX_ODDS)
-    ].copy()
-
-    if not d.empty:
-        d["Mercado"] = (
-            "Over 2.5"
-            if c == "o25_score"
-            else "Under 2.5"
-        )
-
-        d["Score"] = d[c]
-
-        tables.append(d)
-
-if not tables:
-    st.info(
-        "No aparecen oportunidades con este filtro."
-    )
 else:
-    result = pd.concat(
-        tables,
-        ignore_index=True
-    )
+    st.subheader('💰 Value Scanner')
 
-    cols = [
-        "date",
-        "league",
-        "home",
-        "away",
-        "Mercado",
-        "Score",
-        "lambda_home",
-        "lambda_away"
+    score_cols = [
+        c for c in ['o25_score', 'u25_score']
+        if c in pred.columns
     ]
 
-    st.dataframe(
-        result[cols].sort_values(
-            "Score",
-            ascending=False
-        ),
-        use_container_width=True,
-        hide_index=True
+    if not score_cols:
+        st.warning(
+            'Todavía no hay cuotas O/U 2.5 disponibles para el escáner.'
+        )
+        st.stop()
+
+    min_score = st.slider(
+        'Value Score mínimo',
+        50,
+        100,
+        65
     )
+
+    tables = []
+
+    for c in score_cols:
+        prefix = "o25" if c == "o25_score" else "u25"
+
+        pcol = f"{prefix}_prob"
+        ocol = f"{prefix}_odds"
+        gcol = f"{prefix}_gap"
+
+        required = [c, pcol, ocol, gcol]
+
+        if not all(x in pred.columns for x in required):
+            continue
+
+        d = pred[
+            (pred[c].fillna(-1) >= min_score) &
+            (pred[pcol].fillna(-1) >= MIN_MODEL_PROB) &
+            (pred[gcol].fillna(-1) >= MIN_VALUE_GAP) &
+            (pred[ocol].fillna(-1) >= MIN_ODDS) &
+            (pred[ocol].fillna(-1) <= MAX_ODDS)
+        ].copy()
+
+        if not d.empty:
+            d["Mercado"] = (
+                "Over 2.5"
+                if c == "o25_score"
+                else "Under 2.5"
+            )
+
+            d["Score"] = d[c]
+
+            tables.append(d)
+
+    if not tables:
+        st.info(
+            "No aparecen oportunidades con este filtro."
+        )
+    else:
+        result = pd.concat(
+            tables,
+            ignore_index=True
+        )
+
+        cols = [
+            "date",
+            "league",
+            "home",
+            "away",
+            "Mercado",
+            "Score",
+            "lambda_home",
+            "lambda_away"
+        ]
+
+        st.dataframe(
+            result[cols].sort_values(
+                "Score",
+                ascending=False
+            ),
+            use_container_width=True,
+            hide_index=True
+        )
