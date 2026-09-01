@@ -55,7 +55,7 @@ else:
         st.warning('No se encontraron partidos en la ventana de prueba.')
         st.stop()
 
-        if page == '🧪 Test 15–28 agosto':
+    if page == '🧪 Test 15–28 agosto':
         st.subheader('🧪 Test fuera de muestra: 15–28 agosto 2026')
         st.metric('Partidos evaluados', len(pred))
         st.dataframe(pred, use_container_width=True, hide_index=True)
