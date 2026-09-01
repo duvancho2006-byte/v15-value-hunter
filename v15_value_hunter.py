@@ -457,20 +457,38 @@ def evaluate_market(predictions, market, min_score=65):
         return pd.DataFrame()
 
     d = predictions.dropna(subset=cols).copy()
-    d = d[d[scol] >= min_score].copy()
+
+    # Filtros de valor y confianza del modelo.
+    d = d[
+        (d[scol] >= min_score) &
+        (d[pcol] >= MIN_MODEL_PROB) &
+        ((d[pcol] - d[ocol].apply(implied_probability)) >= MIN_VALUE_GAP) &
+        (d[ocol] >= MIN_ODDS) &
+        (d[ocol] <= MAX_ODDS)
+    ].copy()
 
     if d.empty:
         return d
 
-    d["win"] = d.apply(lambda r: settle_market(r, market), axis=1)
+    d["win"] = d.apply(
+        lambda r: settle_market(r, market),
+        axis=1
+    )
+
     d["profit_1u"] = np.where(
         d["win"] == 1,
         d[ocol] - 1,
         -1
     )
+
     d["roi"] = d["profit_1u"].mean()
+
     d["cum_profit"] = d["profit_1u"].cumsum()
-    d["drawdown"] = d["cum_profit"] - d["cum_profit"].cummax()
+
+    d["drawdown"] = (
+        d["cum_profit"] -
+        d["cum_profit"].cummax()
+    )
 
     return d
 
