@@ -131,7 +131,7 @@ if not d.empty:
 
     tables.append(d)
 
-        if not tables:
+    if not tables:
         st.info(
             "No aparecen oportunidades con este filtro."
         )
