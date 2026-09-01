@@ -70,7 +70,7 @@ else:
         min_score = st.slider('Value Score mínimo', 50, 100, 65)
         tables = []
         for c in score_cols:
-    prefix = "o25" if c == "o25_score" else "u25"
+            prefix = "o25" if c == "o25_score" else "u25"
 
     pcol = f"{prefix}_prob"
     ocol = f"{prefix}_odds"
