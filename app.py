@@ -141,7 +141,7 @@ if not d.empty:
             ignore_index=True
         )
 
-cols = [
+    cols = [
     "date",
     "league",
     "home",
