@@ -38,6 +38,7 @@ page = st.sidebar.radio(
         '🏠 Resumen',
         '💰 Value Scanner',
         '🧪 Test 15–28 agosto',
+        '📊 V15 Auditor',
         '📚 Datos'
     ]
 )
@@ -181,9 +182,303 @@ else:
     # VALUE SCANNER
     # ========================================================
 
-    else:
+    elif page == '📊 V15 Auditor':
+                st.subheader('📊 V15 AUDITOR')
+        st.caption(
+            'Evaluación de las señales generadas por V15 '
+            'en el período fuera de muestra.'
+        )
 
-        st.subheader('💰 Value Scanner')
+        # ----------------------------------------------------
+        # Preparar resultados
+        # ----------------------------------------------------
+
+        auditor_tables = []
+
+        market_config = {
+            'Over 2.5': {
+                'score': 'o25_score',
+                'prob': 'o25_prob',
+                'odds': 'o25_odds',
+                'gap': 'o25_gap',
+                'result': 'result_over25'
+            },
+            'Under 2.5': {
+                'score': 'u25_score',
+                'prob': 'u25_prob',
+                'odds': 'u25_odds',
+                'gap': 'u25_gap',
+                'result': 'result_under25'
+            }
+        }
+
+        # ----------------------------------------------------
+        # Evaluar cada mercado
+        # ----------------------------------------------------
+
+        for market, cfg in market_config.items():
+
+            required = [
+                cfg['score'],
+                cfg['prob'],
+                cfg['odds'],
+                cfg['gap'],
+                cfg['result']
+            ]
+
+            if not all(
+                col in pred.columns
+                for col in required
+            ):
+                continue
+
+            d = pred[
+                pred[cfg['score']].notna() &
+                pred[cfg['prob']].notna() &
+                pred[cfg['odds']].notna() &
+                pred[cfg['gap']].notna() &
+                pred[cfg['result']].notna()
+            ].copy()
+
+            if d.empty:
+                continue
+
+            d['Mercado'] = market
+            d['Score'] = d[cfg['score']]
+            d['Probabilidad'] = d[cfg['prob']]
+            d['Cuota'] = d[cfg['odds']]
+            d['Gap'] = d[cfg['gap']]
+            d['Resultado'] = d[cfg['result']]
+
+            d['Win'] = d['Resultado'].astype(int)
+
+            d['Profit_1U'] = (
+                d['Cuota'] - 1
+            ).where(
+                d['Win'] == 1,
+                -1
+            )
+
+            auditor_tables.append(d)
+
+
+        # ----------------------------------------------------
+        # Mostrar auditoría
+        # ----------------------------------------------------
+
+        if not auditor_tables:
+
+            st.warning(
+                'No hay suficientes datos de resultados '
+                'para realizar la auditoría.'
+            )
+
+        else:
+
+            audit = pd.concat(
+                auditor_tables,
+                ignore_index=True
+            )
+
+            st.metric(
+                'Señales evaluables',
+                len(audit)
+            )
+
+            # ------------------------------------------------
+            # Resumen general
+            # ------------------------------------------------
+
+            total_bets = len(audit)
+            wins = int(audit['Win'].sum())
+            losses = total_bets - wins
+
+            hit_rate = (
+                wins / total_bets
+                if total_bets > 0
+                else 0
+            )
+
+            total_profit = audit['Profit_1U'].sum()
+
+            roi = (
+                total_profit / total_bets
+                if total_bets > 0
+                else 0
+            )
+
+            avg_ev = (
+                audit['Probabilidad'] * audit['Cuota'] - 1
+            ).mean()
+
+            c1, c2, c3, c4, c5 = st.columns(5)
+
+            c1.metric(
+                'Señales',
+                total_bets
+            )
+
+            c2.metric(
+                'Aciertos',
+                wins
+            )
+
+            c3.metric(
+                'Fallos',
+                losses
+            )
+
+            c4.metric(
+                'Hit Rate',
+                f'{hit_rate:.2%}'
+            )
+
+            c5.metric(
+                'ROI',
+                f'{roi:.2%}'
+            )
+
+            st.metric(
+                'EV medio del modelo',
+                f'{avg_ev:.2%}'
+            )
+
+
+            # ------------------------------------------------
+            # Over vs Under
+            # ------------------------------------------------
+
+            st.subheader('⚽ Rendimiento por mercado')
+
+            market_summary = (
+                audit
+                .groupby('Mercado')
+                .agg(
+                    Señales=('Win', 'size'),
+                    Aciertos=('Win', 'sum'),
+                    Beneficio=('Profit_1U', 'sum'),
+                    Probabilidad_media=('Probabilidad', 'mean'),
+                    EV_medio=('Profit_1U', 'mean')
+                )
+                .reset_index()
+            )
+
+            market_summary['Hit Rate'] = (
+                market_summary['Aciertos']
+                / market_summary['Señales']
+            )
+
+            market_summary['ROI'] = (
+                market_summary['Beneficio']
+                / market_summary['Señales']
+            )
+
+            st.dataframe(
+                market_summary,
+                use_container_width=True,
+                hide_index=True
+            )
+
+
+            # ------------------------------------------------
+            # Score
+            # ------------------------------------------------
+
+            st.subheader('🎯 Rendimiento según Value Score')
+
+            bins = [
+                65,
+                70,
+                75,
+                80,
+                85,
+                90,
+                95,
+                101
+            ]
+
+            labels = [
+                '65–69',
+                '70–74',
+                '75–79',
+                '80–84',
+                '85–89',
+                '90–94',
+                '95–100'
+            ]
+
+            audit['Score_Rango'] = pd.cut(
+                audit['Score'],
+                bins=bins,
+                labels=labels,
+                right=False
+            )
+
+            score_summary = (
+                audit
+                .groupby(
+                    'Score_Rango',
+                    observed=False
+                )
+                .agg(
+                    Señales=('Win', 'size'),
+                    Aciertos=('Win', 'sum'),
+                    Beneficio=('Profit_1U', 'sum')
+                )
+                .reset_index()
+            )
+
+            score_summary['Hit Rate'] = (
+                score_summary['Aciertos']
+                / score_summary['Señales']
+            )
+
+            score_summary['ROI'] = (
+                score_summary['Beneficio']
+                / score_summary['Señales']
+            )
+
+            st.dataframe(
+                score_summary,
+                use_container_width=True,
+                hide_index=True
+            )
+
+
+            # ------------------------------------------------
+            # Tabla de señales auditadas
+            # ------------------------------------------------
+
+            st.subheader('🔎 Señales auditadas')
+
+            audit_cols = [
+                'date',
+                'league',
+                'home',
+                'away',
+                'Mercado',
+                'Score',
+                'Probabilidad',
+                'Cuota',
+                'Gap',
+                'Profit_1U'
+            ]
+
+            audit_view = audit[
+                [
+                    col for col in audit_cols
+                    if col in audit.columns
+                ]
+            ].sort_values(
+                'Score',
+                ascending=False
+            )
+
+            st.dataframe(
+                audit_view,
+                use_container_width=True,
+                hide_index=True
+            )
 
         score_cols = [
             c
