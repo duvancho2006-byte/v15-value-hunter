@@ -182,7 +182,7 @@ else:
     # VALUE SCANNER
     # ========================================================
 
-    elif page == '📊 V15 Auditor':
+elif page == '📊 V15 Auditor':
     st.subheader('📊 V15 AUDITOR')
     st.caption(
         'Evaluación de las señales generadas por V15 '
