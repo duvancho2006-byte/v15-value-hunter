@@ -70,8 +70,27 @@ else:
         min_score = st.slider('Value Score mínimo', 50, 100, 65)
         tables = []
         for c in score_cols:
-            d = pred[pred[c].fillna(-1) >= min_score].copy()
-            if not d.empty:
+
+    prefix = "o25" if c == "o25_score" else "u25"
+
+    pcol = f"{prefix}_prob"
+    ocol = f"{prefix}_odds"
+    gcol = f"{prefix}_gap"
+
+    required = [c, pcol, ocol, gcol]
+
+    if not all(x in pred.columns for x in required):
+        continue
+
+    d = pred[
+        (pred[c].fillna(-1) >= min_score) &
+        (pred[pcol].fillna(-1) >= MIN_MODEL_PROB) &
+        (pred[gcol].fillna(-1) >= MIN_VALUE_GAP) &
+        (pred[ocol].fillna(-1) >= MIN_ODDS) &
+        (pred[ocol].fillna(-1) <= MAX_ODDS)
+    ].copy()
+
+    if not d.empty:
                 d['Mercado'] = 'Over 2.5' if c == 'o25_score' else 'Under 2.5'
                 d['Score'] = d[c]
                 tables.append(d)
