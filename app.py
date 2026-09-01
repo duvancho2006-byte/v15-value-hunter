@@ -97,6 +97,7 @@ for c in score_cols:
 
 if not tables:
             st.info('No aparecen oportunidades con este filtro.')
+    
         else:
             result = pd.concat(tables, ignore_index=True)
             cols = ['date','league','home','away','Mercado','Score','lambda_home','lambda_away']
