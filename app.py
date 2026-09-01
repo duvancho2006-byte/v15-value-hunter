@@ -116,16 +116,20 @@ else:
             (pred[ocol].fillna(-1) <= MAX_ODDS)
         ].copy()
 
-        if not d.empty:
-            d["Mercado"] = (
-                "Over 2.5"
-                if c == "o25_score"
-                else "Under 2.5"
-            )
+if not d.empty:
+    d["Mercado"] = (
+        "Over 2.5"
+        if c == "o25_score"
+        else "Under 2.5"
+    )
 
-            d["Score"] = d[c]
+    d["Score"] = d[c]
+    d["Probabilidad"] = d[pcol]
+    d["Cuota"] = d[ocol]
+    d["Gap"] = d[gcol]
+    d["EV"] = d["Probabilidad"] * d["Cuota"] - 1
 
-            tables.append(d)
+    tables.append(d)
 
     if not tables:
         st.info(
@@ -137,16 +141,20 @@ else:
             ignore_index=True
         )
 
-        cols = [
-            "date",
-            "league",
-            "home",
-            "away",
-            "Mercado",
-            "Score",
-            "lambda_home",
-            "lambda_away"
-        ]
+cols = [
+    "date",
+    "league",
+    "home",
+    "away",
+    "Mercado",
+    "Score",
+    "Probabilidad",
+    "Cuota",
+    "Gap",
+    "EV",
+    "lambda_home",
+    "lambda_away"
+]
 
         st.dataframe(
             result[cols].sort_values(
