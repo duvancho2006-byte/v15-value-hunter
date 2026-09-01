@@ -183,11 +183,11 @@ else:
     # ========================================================
 
     elif page == '📊 V15 Auditor':
-                st.subheader('📊 V15 AUDITOR')
-        st.caption(
-            'Evaluación de las señales generadas por V15 '
-            'en el período fuera de muestra.'
-        )
+    st.subheader('📊 V15 AUDITOR')
+    st.caption(
+        'Evaluación de las señales generadas por V15 '
+        'en el período fuera de muestra.'
+    )
 
         # ----------------------------------------------------
         # Preparar resultados
