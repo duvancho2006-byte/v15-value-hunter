@@ -131,7 +131,7 @@ if not d.empty:
 
     tables.append(d)
 
-    if not tables:
+        if not tables:
         st.info(
             "No aparecen oportunidades con este filtro."
         )
@@ -141,20 +141,20 @@ if not d.empty:
             ignore_index=True
         )
 
-    cols = [
-    "date",
-    "league",
-    "home",
-    "away",
-    "Mercado",
-    "Score",
-    "Probabilidad",
-    "Cuota",
-    "Gap",
-    "EV",
-    "lambda_home",
-    "lambda_away"
-]
+        cols = [
+            "date",
+            "league",
+            "home",
+            "away",
+            "Mercado",
+            "Score",
+            "Probabilidad",
+            "Cuota",
+            "Gap",
+            "EV",
+            "lambda_home",
+            "lambda_away"
+        ]
 
         st.dataframe(
             result[cols].sort_values(
