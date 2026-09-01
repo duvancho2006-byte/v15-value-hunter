@@ -67,7 +67,13 @@ else:
             st.warning('Todavía no hay cuotas O/U 2.5 disponibles para el escáner.')
             st.stop()
 
-        min_score = st.slider('Value Score mínimo', 50, 100, 65)
+        min_score = st.slider(
+    'Value Score mínimo',
+    50,
+    100,
+    65
+)
+
 tables = []
 
 for c in score_cols:
@@ -91,14 +97,42 @@ for c in score_cols:
     ].copy()
 
     if not d.empty:
-        d['Mercado'] = 'Over 2.5' if c == 'o25_score' else 'Under 2.5'
-        d['Score'] = d[c]
+        d["Mercado"] = (
+            "Over 2.5"
+            if c == "o25_score"
+            else "Under 2.5"
+        )
+
+        d["Score"] = d[c]
+
         tables.append(d)
 
 if not tables:
-            st.info('No aparecen oportunidades con este filtro.')
-    
-        else:
-            result = pd.concat(tables, ignore_index=True)
-            cols = ['date','league','home','away','Mercado','Score','lambda_home','lambda_away']
-            st.dataframe(result[cols].sort_values('Score', ascending=False), use_container_width=True, hide_index=True)
+    st.info(
+        "No aparecen oportunidades con este filtro."
+    )
+else:
+    result = pd.concat(
+        tables,
+        ignore_index=True
+    )
+
+    cols = [
+        "date",
+        "league",
+        "home",
+        "away",
+        "Mercado",
+        "Score",
+        "lambda_home",
+        "lambda_away"
+    ]
+
+    st.dataframe(
+        result[cols].sort_values(
+            "Score",
+            ascending=False
+        ),
+        use_container_width=True,
+        hide_index=True
+    )
