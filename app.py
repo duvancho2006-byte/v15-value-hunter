@@ -1,13 +1,26 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title='V15 — Value Hunter', page_icon='⚽', layout='wide')
+st.set_page_config(
+    page_title='V15 — Value Hunter',
+    page_icon='⚽',
+    layout='wide'
+)
 
 st.title('⚽ V15 — VALUE HUNTER')
-st.caption('Motor experimental de análisis estadístico y búsqueda de valor en fútbol')
+st.caption(
+    'Motor experimental de análisis estadístico y búsqueda de valor en fútbol'
+)
 
 try:
-    from v15_value_hunter import load_data, walk_forward_test
+    from v15_value_hunter import (
+        load_data,
+        walk_forward_test,
+        MIN_MODEL_PROB,
+        MIN_VALUE_GAP,
+        MIN_ODDS,
+        MAX_ODDS,
+    )
 except Exception as e:
     st.error(f'No se pudo cargar el motor V15: {e}')
     st.stop()
