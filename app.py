@@ -68,10 +68,10 @@ else:
             st.stop()
 
         min_score = st.slider('Value Score mínimo', 50, 100, 65)
-        tables = []
-        
-        for c in score_cols:
-            prefix = "o25" if c == "o25_score" else "u25"
+tables = []
+
+for c in score_cols:
+    prefix = "o25" if c == "o25_score" else "u25"
 
     pcol = f"{prefix}_prob"
     ocol = f"{prefix}_odds"
@@ -91,11 +91,11 @@ else:
     ].copy()
 
     if not d.empty:
-        # AQUÍ debe continuar el código que ya tenía tu aplicación
-                d['Mercado'] = 'Over 2.5' if c == 'o25_score' else 'Under 2.5'
-                d['Score'] = d[c]
-                tables.append(d)
-        if not tables:
+        d['Mercado'] = 'Over 2.5' if c == 'o25_score' else 'Under 2.5'
+        d['Score'] = d[c]
+        tables.append(d)
+
+if not tables:
             st.info('No aparecen oportunidades con este filtro.')
         else:
             result = pd.concat(tables, ignore_index=True)
